@@ -124,6 +124,11 @@ palabras_inutiles <-  c(
 freq_palabras_fltda <- freq_palabras %>% 
   filter(!palabra %in% palabras_inutiles)
 
+# Codigo para limpiar el Environment----
+rm(list = ls())
 
+# Notas----
 
+# 1. Este codigo fue escrito con asistencia parcial de gemini. 
+# 2. Pendiente por limpiar datos anomalos, duplicados y faltantes (27-05-2026)
        
