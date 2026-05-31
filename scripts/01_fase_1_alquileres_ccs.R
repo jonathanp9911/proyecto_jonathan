@@ -87,6 +87,45 @@ alq_ccs_raw <- read_csv("datos/df_zonas_caracas_info_completa_final_20260425.csv
      ) %>%
      select(titulo, precio_usd, habitaciones, baños, metros_2, municipios, zona_clean, location)
    
+   
+# 2.3.1. Tabla Resumen del Conjunto de Datos. 
+   
+# Paso 1. Crear una tibble de texto con las descripciones de las variables. 
+   
+   descripciones <- tibble( 
+     Variable = c("titulo", "precio_usd", "habitaciones", 
+                 "baños", "metros_2", "municipios", 
+                 "zona_clean", "location"),
+     Descripción = c(
+       "Título original descriptivo de la oferta en la plataforma",
+       "Canon de arrendamiento mensual expresado en dólares (USD)",
+       "Número total de habitaciones del inmueble",
+       "Número total de baños del inmueble",
+       "Área de construcción del inmueble en metros cuadrados",
+       "Municipio de la Gran Caracas donde se ubica la propiedad",
+       "Urbanización o sector específico normalizado",
+       "Ubicación geográfica general extraída del portal"
+     )
+    )
+
+# Paso 2. Crear la estructura de la tabla. 
+   
+   sapply(alq_ccs_clean, class) %>%
+     enframe(name = "Variable", value = "Clase_R") %>% 
+     mutate(
+       Tipo = case_when( 
+         Clase_R == "numeric" ~ "Cuantitativa",
+         Clase_R == "character" ~ "Cualitativa",
+         TRUE ~ "Otro"
+         )
+     ) %>%
+     left_join(descripciones, by = 'Variable') %>%
+     select(Variable, Descripción, Tipo) %>%
+     gt()
+   
+   view(tabla_resumen) 
+   
+   
 # 2.4. Variable Titulo. 
 
 # Realizaremos un proceso de basico de mineria de texto para extraer la información mas relevante
