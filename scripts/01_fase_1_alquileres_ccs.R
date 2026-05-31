@@ -22,6 +22,7 @@ library(gt)
 #install.packages("tidytext")
 #install.packages("wordcloud") 
 #install.packages("RcolorBrewer")
+#install.packages("scales")
 
 # 2. Importar, inspeccionar y ordenar datos----
 
@@ -86,18 +87,86 @@ alq_ccs_raw <- read_csv("datos/df_zonas_caracas_info_completa_final_20260425.csv
      ) %>%
      select(titulo, precio_usd, habitaciones, baños, metros_2, municipios, zona_clean, location)
    
+# 2.4. Variable Titulo. 
+
+# Realizaremos un proceso de basico de mineria de texto para extraer la información mas relevante
+# de la variable titulo. 
    
+# 2.4.1. Lista de palabras mas usadas
+
+# Paso 1: Crear el lista de palabras vacias / stopwords para posteriormente removerlas.
+# Esto incluye conectores como "de", "con", "el", "en", que no aportan valor al análisis.
+
+stop_words_es <- get_stopwords(language = "es") 
+
+# Paso 2: Tokenización y conteo de palabras.
+
+freq_words <- alq_ccs_clean %>%
+  select(titulo) %>%
+  unnest_tokens(output = palabra, input = titulo) %>%
+  anti_join(stop_words_es, by = c("palabra" = "word")) %>%
+  count(palabra, sort= TRUE)
+   
+   
+# Opcional: Guardar la lista de palabras para que la IA identifique palabras claves.
+
+# write.csv(freq_words,"datos/freq_words.csv")
+   
+   
+   
+    
+# 2.4. Datos anomalos o OUTLIERS
+
+# Para la detección de valores anomalos usaremos el test de Tukey (METODO DEL RANGO INTERCUARTIL)
+# haremos 2 iteraciones sobre el conjunto de datos uno global y uno por municipio. 
    
 
-
+# 2.4.1. Test Tukey ("Global").
    
+# Paso 1: Analisis Visual. 
+   
+  ggplot(alq_ccs_clean, aes(y = precio_usd)) + 
+           geom_boxplot(fill= "steelblue", alpha = 0.7) +
+           theme_minimal() 
+         
+   
+summary_stats <- alq_ccs_clean %>%
+      select(precio_usd, metros_2) %>%
+      summary() %>%
+      as.data.frame.matrix()
+
+rownames(summary_stats) <- c("Min", "1st Qu", "Median", 
+                               "Mean", "3rd Qu", "Max")
+
+summary_stats_price <- 
+
+
+
+
+# Asegúrate de cargar la librería scales (viene instalada con el tidyverse)
+#library(scales)
+
+ggplot(alq_ccs_clean) +
+  aes(y = precio_usd) + 
+  geom_boxplot(fill = "steelblue", alpha = 0.7) +
+  theme_bw(base_size = 11) + 
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  ) +
   
-   
-
-
-   
-   
-   
-   
-   
+  # 1. SOLUCIÓN A LOS NÚMEROS: Formateamos el eje Y
+  # Esto quita la notación científica y pone el formato de moneda ($1,000)
+  scale_y_continuous(labels = label_dollar(big.mark = ".", decimal.mark = ",")) +
+  
+  # 2. SOLUCIÓN A LA CAJA APLASTADA: Hacemos un "Zoom"
+  # Cambia el 5000 por el precio máximo que consideres razonable ver en el gráfico.
+  # Esto corta visualmente el gráfico en $5,000 para que la caja se pueda expandir y verse clara.
+  coord_cartesian(ylim = c(0, 5000)) +
+  
+  labs(
+    title = "Distribución General de Precios de Alquiler (Zoom aplicado)",
+    y = "Precio (USD)",
+    x = NULL
+  )
    
